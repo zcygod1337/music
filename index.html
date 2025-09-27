@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐分享</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333;
+    background-image: url('background.jpg'); background-size: cover; background-attachment: fixed;
+    background-position: center; position: relative; min-height: 100vh;">
+    <!-- 半透明遮罩 -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.85); z-index: -1;"></div>
+    
+    <!-- 页面容器 -->
+    <div style="max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1;">
+        <!-- 页面标题 -->
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #5A6B7C; font-size: 2.2rem; margin-bottom: 10px;">音乐分享</h1>
+            <p style="color: #8A9BA8; font-size: 1rem;">发现和分享美好的旋律</p>
+        </header>
+
+        <!-- 主内容区：左侧播放器，右侧列表 -->
+        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+            <!-- 左侧：播放器（缩小版） -->
+            <div style="flex: 0 0 320px;">
+                <div style="background-color: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(90, 107, 124, 0.1);">
+                    <!-- 当前播放的歌曲封面 -->
+                    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                        <div style="width: 180px; height: 180px; border-radius: 50%; overflow: hidden; box-shadow: 0 8px 25px rgba(90, 107, 124, 0.2); position: relative;">
+                            <img id="current-cover" src="1.png" alt="歌曲封面" style="width: 100%; height: 100%; object-fit: cover;">
+                            <!-- 旋转动画效果 -->
+                            <div id="cover-spin" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.3); border-top-color: #5A6B7C; animation: spin 3s linear infinite; display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 当前播放信息 -->
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <h2 id="current-title" style="margin: 0 0 8px 0; color: #333; font-size: 1.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">歌曲 1</h2>
+                        <p id="current-artist" style="margin: 0; color: #777; font-size: 0.9rem;">艺术家</p>
+                    </div>
+
+                    <!-- 进度条 -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #8A9BA8; margin-bottom: 3px;">
+                            <span id="current-time">00:00</span>
+                            <span id="total-time">00:00</span>
+                        </div>
+                        <div style="height: 4px; background-color: #E8EBF0; border-radius: 5px; position: relative; cursor: pointer;">
+                            <div id="progress-bar" style="width: 0%; height: 100%; background-color: #5A6B7C; border-radius: 5px;"></div>
+                            <div id="progress-handle" style="position: absolute; top: 50%; left: 0%; width: 12px; height: 12px; background-color: #5A6B7C; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div>
+                        </div>
+                    </div>
+
+                    <!-- 控制按钮 -->
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+                        <button id="step-backward" style="background: none; border: none; color: #8A9BA8; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease;">
+                            <span style="font-family: Arial, sans-serif;">❮❮</span>
+                        </button>
+                        <button id="backward" style="background: none; border: none; color: #8A9BA8; font-size: 1.6rem; cursor: pointer; transition: all 0.3s ease;">
+                            <span style="font-family: Arial, sans-serif;">❮</span>
+                        </button>
+                        <button id="play-pause-btn" style="width: 50px; height: 50px; border-radius: 50%; background-color: #5A6B7C; color: white; border: none; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 3px 8px rgba(90, 107, 124, 0.3);">
+                            <span style="font-family: Arial, sans-serif;">▶</span>
+                        </button>
+                        <button id="forward" style="background: none; border: none; color: #8A9BA8; font-size: 1.6rem; cursor: pointer; transition: all 0.3s ease;">
+                            <span style="font-family: Arial, sans-serif;">❯</span>
+                        </button>
+                        <button id="step-forward" style="background: none; border: none; color: #8A9BA8; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease;">
+                            <span style="font-family: Arial, sans-serif;">❯❯</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：歌曲列表 -->
+            <div style="flex: 1; min-width: 300px;">
+                <div style="background-color: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(90, 107, 124, 0.1); max-height: 500px; overflow-y: auto;">
+                    <h2 style="color: #5A6B7C; font-size: 1.5rem; margin-bottom: 20px; border-bottom: 2px solid #E8EBF0; padding-bottom: 10px;">歌曲列表</h2>
+                    
+                    <div id="song-list" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- 歌曲项 1 -->
+                        <div class="song-item" data-index="0" style="display: flex; align-items: center; background-color: white; border-radius: 10px; padding: 10px; box-shadow: 0 3px 10px rgba(90, 107, 124, 0.05); cursor: pointer; transition: all 0.3s ease;">
+                            <img src="1.png" alt="歌曲1封面" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px;">
+                            <div style="flex-grow: 1;">
+                                <h3 style="margin: 0 0 3px 0; color: #333; font-size: 1rem;">歌曲 1</h3>
+                                <p style="margin: 0; color: #777; font-size: 0.8rem;">艺术家</p>
+                            </div>
+                            <span class="song-duration" data-index="0" style="color: #8A9BA8; margin-right: 15px; font-size: 0.8rem;">00:00</span>
+                            <button class="play-btn" style="background: none; border: none; color: #5A6B7C; font-size: 0.9rem; cursor: pointer;">
+                                <span style="font-family: Arial, sans-serif;">▶</span>
+                            </button>
+                        </div>
+
+                        <!-- 歌曲项 2 -->
+                        <div class="song-item" data-index="1" style="display: flex; align-items: center; background-color: white; border-radius: 10px; padding: 10px; box-shadow: 0 3px 10px rgba(90, 107, 124, 0.05); cursor: pointer; transition: all 0.3s ease;">
+                            <img src="2.png" alt="歌曲2封面" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px;">
+                            <div style="flex-grow: 1;">
+                                <h3 style="margin: 0 0 3px 0; color: #333; font-size: 1rem;">歌曲 2</h3>
+                                <p style="margin: 0; color: #777; font-size: 0.8rem;">艺术家</p>
+                            </div>
+                            <span class="song-duration" data-index="1" style="color: #8A9BA8; margin-right: 15px; font-size: 0.8rem;">00:00</span>
+                            <button class="play-btn" style="background: none; border: none; color: #5A6B7C; font-size: 0.9rem; cursor: pointer;">
+                                <span style="font-family: Arial, sans-serif;">▶</span>
+                            </button>
+                        </div>
+
+                        <!-- 歌曲项 3 -->
+                        <div class="song-item" data-index="2" style="display: flex; align-items: center; background-color: white; border-radius: 10px; padding: 10px; box-shadow: 0 3px 10px rgba(90, 107, 124, 0.05); cursor: pointer; transition: all 0.3s ease;">
+                            <img src="3.png" alt="歌曲3封面" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px;">
+                            <div style="flex-grow: 1;">
+                                <h3 style="margin: 0 0 3px 0; color: #333; font-size: 1rem;">歌曲 3</h3>
+                                <p style="margin: 0; color: #777; font-size: 0.8rem;">艺术家</p>
+                            </div>
+                            <span class="song-duration" data-index="2" style="color: #8A9BA8; margin-right: 15px; font-size: 0.8rem;">00:00</span>
+                            <button class="play-btn" style="background: none; border: none; color: #5A6B7C; font-size: 0.9rem; cursor: pointer;">
+                                <span style="font-family: Arial, sans-serif;">▶</span>
+                            </button>
+                        </div>
+
+                        <!-- 歌曲项 4 -->
+                        <div class="song-item" data-index="3" style="display: flex; align-items: center; background-color: white; border-radius: 10px; padding: 10px; box-shadow: 0 3px 10px rgba(90, 107, 124, 0.05); cursor: pointer; transition: all 0.3s ease;">
+                            <img src="4.png" alt="歌曲4封面" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px;">
+                            <div style="flex-grow: 1;">
+                                <h3 style="margin: 0 0 3px 0; color: #333; font-size: 1rem;">歌曲 4</h3>
+                                <p style="margin: 0; color: #777; font-size: 0.8rem;">艺术家</p>
+                            </div>
+                            <span class="song-duration" data-index="3" style="color: #8A9BA8; margin-right: 15px; font-size: 0.8rem;">00:00</span>
+                            <button class="play-btn" style="background: none; border: none; color: #5A6B7C; font-size: 0.9rem; cursor: pointer;">
+                                <span style="font-family: Arial, sans-serif;">▶</span>
+                            </button>
+                        </div>
+
+                        <!-- 歌曲项 5 -->
+                        <div class="song-item" data-index="4" style="display: flex; align-items: center; background-color: white; border-radius: 10px; padding: 10px; box-shadow: 0 3px 10px rgba(90, 107, 124, 0.05); cursor: pointer; transition: all 0.3s ease;">
+                            <img src="5.png" alt="歌曲5封面" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px;">
+                            <div style="flex-grow: 1;">
+                                <h3 style="margin: 0 0 3px 0; color: #333; font-size: 1rem;">歌曲 5</h3>
+                                <p style="margin: 0; color: #777; font-size: 0.8rem;">艺术家</p>
+                            </div>
+                            <span class="song-duration" data-index="4" style="color: #8A9BA8; margin-right: 15px; font-size: 0.8rem;">00:00</span>
+                            <button class="play-btn" style="background: none; border: none; color: #5A6B7C; font-size: 0.9rem; cursor: pointer;">
+                                <span style="font-family: Arial, sans-serif;">▶</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer style="text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #E8EBF0; color: #8A9BA8; font-size: 0.9rem;">
+            <p>音乐分享 &copy; 2023</p>
+        </footer>
+    </div>
+
+    <!-- 音乐播放器（隐藏的audio元素） -->
+    <audio id="audio-player" style="display: none;">
+        <source src="1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- JavaScript -->
+    <script>
+        // 歌曲数据 - 关联本地文件
+        const songs = [
+            {
+                title: "歌曲 1",
+                artist: "艺术家",
+                cover: "1.png",
+                src: "1.mp3"
+            },
+            {
+                title: "歌曲 2",
+                artist: "艺术家",
+                cover: "2.png",
+                src: "2.mp3"
+            },
+            {
+                title: "歌曲 3",
+                artist: "艺术家",
+                cover: "3.png",
+                src: "3.mp3"
+            },
+            {
+                title: "歌曲 4",
+                artist: "艺术家",
+                cover: "4.png",
+                src: "4.mp3"
+            },
+            {
+                title: "歌曲 5",
+                artist: "艺术家",
+                cover: "5.png",
+                src: "5.mp3"
+            }
+            // 在这里添加更多歌曲
+        ];
+
+        // DOM元素
+        const audioPlayer = document.getElementById('audio-player');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const currentTitle = document.getElementById('current-title');
+        const currentArtist = document.getElementById('current-artist');
+        const currentCover = document.getElementById('current-cover');
+        const totalTime = document.getElementById('total-time');
+        const currentTimeDisplay = document.getElementById('current-time');
+        const progressBar = document.getElementById('progress-bar');
+        const progressHandle = document.getElementById('progress-handle');
+        const progressContainer = progressBar.parentElement;
+        const coverSpin = document.getElementById('cover-spin');
+        const songItems = document.querySelectorAll('.song-item');
+        const playButtons = document.querySelectorAll('.play-btn');
+        const durationElements = document.querySelectorAll('.song-duration');
+        const stepBackwardBtn = document.getElementById('step-backward');
+        const backwardBtn = document.getElementById('backward');
+        const forwardBtn = document.getElementById('forward');
+        const stepForwardBtn = document.getElementById('step-forward');
+
+        // 当前播放索引
+        let currentIndex = 0;
+        let isPlaying = false;
+
+        // 初始化播放器
+        function initPlayer() {
+            // 预加载所有歌曲以获取时长
+            preloadSongDurations();
+            // 加载第一首歌
+            loadSong(currentIndex);
+        }
+
+        // 预加载所有歌曲以获取时长
+        function preloadSongDurations() {
+            songs.forEach((song, index) => {
+                const tempAudio = new Audio();
+                tempAudio.src = song.src;
+                tempAudio.addEventListener('loadedmetadata', function() {
+                    const duration = formatTime(this.duration);
+                    // 更新对应歌曲的时长显示
+                    document.querySelector(`.song-duration[data-index="${index}"]`).textContent = duration;
+                    // 如果是当前播放的歌曲，更新总时长显示
+                    if (index === currentIndex) {
+                        totalTime.textContent = duration;
+                    }
+                });
+            });
+        }
+
+        // 加载歌曲
+        function loadSong(index) {
+            const song = songs[index];
+            currentTitle.textContent = song.title;
+            currentArtist.textContent = song.artist;
+            currentCover.src = song.cover;
+            audioPlayer.src = song.src;
+            
+            // 当元数据加载完成后更新总时长
+            audioPlayer.addEventListener('loadedmetadata', function() {
+                totalTime.textContent = formatTime(this.duration);
+            });
+            
+            // 更新活跃状态
+            updateActiveSong();
+        }
+
+        // 更新活跃歌曲样式
+        function updateActiveSong() {
+            songItems.forEach((item, index) => {
+                if (index === currentIndex) {
+                    item.style.backgroundColor = "#F5F7FA";
+                    item.style.borderLeft = "4px solid #5A6B7C";
+                } else {
+                    item.style.backgroundColor = "white";
+                    item.style.borderLeft = "none";
+                }
+            });
+        }
+
+        // 播放/暂停切换
+        function togglePlayPause() {
+            if (isPlaying) {
+                pauseSong();
+            } else {
+                playSong();
+            }
+        }
+
+        // 播放歌曲
+        function playSong() {
+            audioPlayer.play().catch(e => {
+                console.log("播放失败:", e);
+                alert("播放失败，请尝试点击播放按钮开始播放（浏览器可能限制自动播放）");
+            });
+            playPauseBtn.innerHTML = '<span style="font-family: Arial, sans-serif;">❚❚</span>';
+            coverSpin.style.display = "block";
+            isPlaying = true;
+            
+            // 更新当前播放按钮样式
+            playButtons.forEach((btn, index) => {
+                if (index === currentIndex) {
+                    btn.innerHTML = '<span style="font-family: Arial, sans-serif;">❚❚</span>';
+                } else {
+                    btn.innerHTML = '<span style="font-family: Arial, sans-serif;">▶</span>';
+                }
+            });
+        }
+
+        // 暂停歌曲
+        function pauseSong() {
+            audioPlayer.pause();
+            playPauseBtn.innerHTML = '<span style="font-family: Arial, sans-serif;">▶</span>';
+            coverSpin.style.display = "none";
+            isPlaying = false;
+            
+            // 更新当前播放按钮样式
+            if (currentIndex >= 0 && currentIndex < playButtons.length) {
+                playButtons[currentIndex].innerHTML = '<span style="font-family: Arial, sans-serif;">▶</span>';
+            }
+        }
+
+        // 切换到指定歌曲
+        function switchSong(index) {
+            currentIndex = index;
+            loadSong(currentIndex);
+            playSong();
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            if (audioPlayer.duration) {
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressHandle.style.left = `${progress}%`;
+                
+                // 更新当前时间显示
+                currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+            }
+        }
+
+        // 格式化时间（秒 -> mm:ss）
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00";
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 调整进度
+        function setProgress(e) {
+            const progressWidth = progressContainer.clientWidth;
+            const clickPosition = e.offsetX;
+            const progress = (clickPosition / progressWidth) * 100;
+            
+            progressBar.style.width = `${progress}%`;
+            progressHandle.style.left = `${progress}%`;
+            
+            const seekTime = (progress / 100) * audioPlayer.duration;
+            audioPlayer.currentTime = seekTime;
+        }
+
+        // 下一首
+        function nextSong() {
+            currentIndex = (currentIndex + 1) % songs.length;
+            loadSong(currentIndex);
+            playSong();
+        }
+
+        // 上一首
+        function prevSong() {
+            currentIndex = (currentIndex - 1 + songs.length) % songs.length;
+            loadSong(currentIndex);
+            playSong();
+        }
+
+        // 快退10秒
+        function rewind() {
+            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+        }
+
+        // 快进10秒
+        function forward() {
+            audioPlayer.currentTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 10);
+        }
+
+        // 事件监听
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        progressContainer.addEventListener('click', setProgress);
+        stepBackwardBtn.addEventListener('click', prevSong);
+        backwardBtn.addEventListener('click', rewind);
+        forwardBtn.addEventListener('click', forward);
+        stepForwardBtn.addEventListener('click', nextSong);
+        
+        // 歌曲结束时自动播放下一首
+        audioPlayer.addEventListener('ended', nextSong);
+        
+        // 歌曲项点击事件
+        songItems.forEach((item, index) => {
+            item.addEventListener('click', (e) => {
+                // 如果点击的是播放按钮，不触发整个项的事件（避免重复处理）
+                if (!e.target.closest('.play-btn')) {
+                    switchSong(index);
+                }
+            });
+        });
+        
+        // 播放按钮点击事件
+        playButtons.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                if (currentIndex === index && isPlaying) {
+                    pauseSong();
+                } else {
+                    switchSong(index);
+                }
+            });
+        });
+
+        // 添加旋转动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            
+            .song-item:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(90, 107, 124, 0.1);
+            }
+            
+            button:hover {
+                transform: scale(1.08);
+            }
+            
+            /* 滚动条美化 */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+            
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: #d1d9e6;
+                border-radius: 10px;
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: #b0b9c6;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 初始化
+        initPlayer();
+    </script>
+</body>
+</html>
+    
